@@ -1,0 +1,8 @@
+location: external
+sources:
+- name: opt.h
+  repo: https://github.com/mrpossoms/opt.h
+  rev: master
+- name: linmath.h
+  repo: https://github.com/mrpossoms/linmath.h
+  rev: master
