@@ -1,9 +1,11 @@
 #pragma once
 
+#include "base.h"
 #include "framebuffer.h"
+#include "scene.h"
 
 namespace Tracer {
 
-int trace(scene* scene, void* buffer, buffer_info info);
+int trace(Scene* scene, BufferInfo info);
 
 };
