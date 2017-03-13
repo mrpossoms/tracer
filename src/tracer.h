@@ -6,6 +6,6 @@
 
 namespace Tracer {
 
-int trace(Scene* scene, BufferInfo info);
+int trace(Scene* scene, Viewer& view, BufferInfo info);
 
 };

@@ -31,7 +31,41 @@ static Vec3 trace_path(Ray3& ray, TraceOpts& opts, int depth)
 	return mat.emittance + (BRDF * reflection);
 }
 
-int Tracer::trace(Scene* scene, BufferInfo info)
+Ray3 ray_at_coord(float u, float v, Viewer& view)
 {
+	Ray3 ray;
+	ray.pos = Vec3(u, v, 0);
+	ray.dir = Vec3(0, 0, 1);
+
+	return ray;
+}
+
+int Tracer::trace(Scene* scene, Viewer& view, BufferInfo info)
+{
+	size_t pix_size = info.pixel_format * sizeof(uint8_t);
+	size_t row_size = pix_size * info.width;
+	const int MAX_DEPTH = 10;
+
+	Intersection int_list[MAX_DEPTH];
+	TraceOpts opts = {
+		.scene     = scene,
+		.int_list  = int_list,
+		.max_depth = MAX_DEPTH
+	};
+
+	for(int y = info.height; y--;)
+	{
+		uint8_t* row = info.buffer + row_size * y;
+		for(int x = info.width; x--;)
+		{
+			uint8_t* pix = row + x * pix_size;
+			float u = (x << 1) / (float)info.width;
+			float v = (y << 1) / (float)info.height;
+			Ray3 ray = ray_at_coord(u - 1, v - 1, view);
+
+			Vec3 color = trace_path(ray, opts, 0);
+		}
+	}
+	
 	return 0;	
 }

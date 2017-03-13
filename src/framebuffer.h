@@ -1,5 +1,7 @@
 #pragma once
 
+#include <inttypes.h>
+
 namespace Tracer {
 
 enum PixelFmt {
@@ -10,7 +12,7 @@ enum PixelFmt {
 struct BufferInfo {
 	PixelFmt    pixel_format;
 	unsigned int width, height;
-	void* buffer;
+	uint8_t* buffer;
 };
 
 }
