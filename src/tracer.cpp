@@ -1,4 +1,5 @@
 #include "tracer.h"
+#include <string.h>
 
 using namespace Tracer;
 
