@@ -41,18 +41,24 @@ IntRes Sphere::intersectsAt(Ray3& ray, Intersection* i)
 
 	i->point = ray.pos + ray.dir * t;
 	i->normal = i->point - position;
-	i->sample.emittance = Vec3(0.5, 0.5, 0.5);
-	i->sample.reflectance = Vec3(0.1, 0.1, 0.1);
 	i->surf = this;
-
 	vec3_norm(i->normal.v, i->normal.v);
+
+	i->sample = material->sample(i);
 
 	return INT_TRUE;
 }
 
 void Sphere::reflectAt(Intersection& i, Ray3& ray, Ray3& outgoing)
 {
-	vec3_reflect(outgoing.dir.v, ray.dir.v, i.normal.v);
+	Vec3 rnd_cube(RNG_NEXT, RNG_NEXT, RNG_NEXT);
+
+	outgoing.pos = i.point;
+	outgoing.dir = i.normal * 2;
+	outgoing.dir += rnd_cube;
+
+	vec3_norm(outgoing.dir.v, outgoing.dir.v);
+	// vec3_reflect(outgoing.dir.v, ray.dir.v, i.normal.v);
 }
 
 void Sphere::transform(mat4x4 m)

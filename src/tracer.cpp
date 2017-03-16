@@ -44,9 +44,16 @@ Ray3 ray_at_coord(float u, float v, Viewer& view)
 
 int Tracer::trace(Scene* scene, BufferInfo info)
 {
+	static bool rng_tabs_generated;
 	size_t pix_size = info.pixel_format * sizeof(uint8_t);
 	size_t row_size = pix_size * info.width;
-	const int MAX_DEPTH = 10;
+	const int MAX_DEPTH = 3;
+
+	if(!rng_tabs_generated)
+	{
+		init_rng();
+		rng_tabs_generated = true;
+	}
 
 	Intersection int_list[MAX_DEPTH];
 	TraceOpts opts = {
@@ -54,6 +61,9 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 		.int_list  = int_list,
 		.max_depth = MAX_DEPTH
 	};
+
+	char* spectrum = " .,':;|[{+*X88";
+	int spec_size = strlen(spectrum) - 1;
 
 	for(int y = info.height; y--;)
 	{
@@ -64,11 +74,23 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 			float u = ((x << 1) + 1) / (float)info.width;
 			float v = ((y << 1) + 1) / (float)info.height;
 			Ray3 ray = ray_at_coord(u - 1, v - 1, scene->view);
-			Vec3 color = trace_path(ray, opts, 0);
+			Vec3 color(0, 0, 0);
 
-			pix[0] = color.x * 9 + 48;
-			pix[1] = color.y * 9 + 48;
-			pix[2] = color.z * 9 + 48;
+			const float samples = 10;
+			for(int i = samples; i--;)
+			{
+				color += trace_path(ray, opts, 0);
+			}
+
+			color *= (1.f / samples);
+
+			color.x = color.x > 1 ? 1 : color.x;
+			color.y = color.y > 1 ? 1 : color.y;
+			color.z = color.z > 1 ? 1 : color.z;
+
+			pix[0] = spectrum[(int)(color.x * spec_size)];
+			pix[1] = spectrum[(int)(color.y * spec_size)];
+			pix[2] = spectrum[(int)(color.z * spec_size)];
 		}
 	}
 

@@ -1,40 +1,62 @@
 #include <math.h>
 #include <unistd.h>
+#include <ncurses.h>
 #include "tracer.h"
 
 using namespace Tracer;
 
 int main(int argc, char* argv[])
 {
-	const int w = 40, h = 15;
-
-	uint8_t buf[w * h * 3] = {};
-
 	BufferInfo info = {
 		.pixel_format = tr_fmt_rgb,
-		.width = w,
-		.height = h,
-		.buffer = buf,
 	};
 
-	Sphere sphere(Vec3(0, 0, 4), 1);
-	Surface* surfaces[] = { &sphere, NULL };
+	Light light;
+	Plastic plastic;
+
+	Sphere sphere0(Vec3(0, 0, 4), 1);
+	Sphere sphere1(Vec3(0, 2, -2), 2);
+
+	sphere0.material = &plastic;
+	sphere1.material = &light;
+
+	Surface* surfaces[] = { &sphere0, &sphere1, NULL };
 	Scene scene = {
 		.view = Viewer(1, 100, M_PI / 2, 1),
 		.surfaces = surfaces,
 	};
 
-	trace(&scene, info);
+	initscr(); cbreak(); noecho();
 
-	for(int i = info.height; i--;)
+	float t = 0;
+	while(1)
 	{
-		uint8_t* row = buf + (info.width * i * 3);
+		getmaxyx(stdscr, info.height, info.width);
+		uint8_t buf[info.width * info.height * 3];
+		info.buffer = buf;
 
-		for(int j = info.width; j--;)
+		sphere1.position.x = cos(t) * 6;
+		sphere1.position.z = sin(t) * 6 + 4;
+		t += 0.01;
+
+		trace(&scene, info);
+
+		for(int i = 0; i < info.height; ++i)
 		{
-			write(1, row + (j * 3), 1);
+			uint8_t* row = buf + (info.width * i * 3);
+			move(i, 0);
+
+			for(int j = info.width; j--;)
+			{
+				// write(1, row + (j * 3), 1);
+				addch(row[j * 3]);
+			}
 		}
-		write(1, "\n", 1);
+
+
+
+		refresh();
+		usleep(1);
 	}
 
 	return 0;
