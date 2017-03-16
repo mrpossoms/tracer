@@ -66,15 +66,20 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 	char* spectrum = " .,':;|[{+*X88";
 	int spec_size = strlen(spectrum) - 1;
 
+	// a character is roughly twice as tall as as it is
+	// wide, so when scaling the x axis for the UVs the scaling
+	// coefficent (aspect) must take that into account.
+	float aspect = info.width / (float)(info.height * 2);
+
 	for(int y = info.height; y--;)
 	{
 		uint8_t* row = info.buffer + row_size * y;
 		for(int x = info.width; x--;)
 		{
 			uint8_t* pix = row + x * pix_size;
-			float u = ((x << 1) + 1) / (float)info.width;
-			float v = ((y << 1) + 1) / (float)info.height;
-			Ray3 ray = ray_at_coord(u - 1, v - 1, scene->view);
+			float u = (((x << 1) + 1) / (float)info.width)  - 1.f;
+			float v = (((y << 1) + 1) / (float)info.height) - 1.f;
+			Ray3 ray = ray_at_coord(u * aspect, v, scene->view);
 			Vec3 color(0, 0, 0);
 
 			const float samples = 10;
