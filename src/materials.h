@@ -12,4 +12,9 @@ struct Plastic : Material {
 	MaterialSample sample(Intersection* i);
 };
 
+struct BlackBody : Material {
+	MaterialSample sample(Intersection* i);
+};
+
+
 }

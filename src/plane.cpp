@@ -5,6 +5,7 @@ using namespace Tracer;
 Plane::Plane(Vec3 position, Vec3 min, Vec3 max)
 {
 	this->position = position;
+	setOrientation(QUAT_I);
 	setCorners(min, max);
 
 	tag = GEO_TAG_PLANE;
@@ -12,9 +13,7 @@ Plane::Plane(Vec3 position, Vec3 min, Vec3 max)
 
 IntRes Plane::intersectsAt(Ray3& ray, Intersection* i)
 {
-	// TODO transform ray
 	Vec3 r_d = ray.dir;
-
 	float n_dot_rd = -vec3_mul_inner(normal.v, r_d.v);
 
 	if(n_dot_rd <= 0)
@@ -22,16 +21,9 @@ IntRes Plane::intersectsAt(Ray3& ray, Intersection* i)
 		return INT_FALSE;
 	}
 
-	// TODO transform ray
 	Vec3 r_o = ray.pos - position;
-	i->t     = (vec3_mul_inner(normal.v, position.v) - vec3_mul_inner(normal.v, ray.pos.v)) / -n_dot_rd;
-
-	// if(i->t <= 0)
-	// {
-	// 	return INT_FALSE;
-	// }
-
-	i->point = ray.dir * i->t;
+	i->t     = -vec3_mul_inner(normal.v, r_o.v) / -n_dot_rd;
+	i->point = r_d * i->t;
 
 	// ensure that the point is contained within
 	// the plane's bounds
@@ -45,7 +37,6 @@ IntRes Plane::intersectsAt(Ray3& ray, Intersection* i)
 		return INT_FALSE;
 	}
 
-	// i->normal = normal;
 	float s = (i->t < 0 ? -1 : 1);
 	i->point += ray.pos;
 	i->normal = normal * s;
@@ -67,18 +58,15 @@ void Plane::reflectAt(Intersection& i, Ray3& ray, Ray3& outgoing)
 	outgoing.dir += rnd_cube;
 
 	vec3_norm(outgoing.dir.v, outgoing.dir.v);
-
 }
 
-void Plane::transform(mat4x4 m)
+void Plane::setOrientation(Quat Q)
 {
+	this->q = Q;
 
-}
+	quat_mul_vec3(min.v, Q.v, min_o.v);
+	quat_mul_vec3(max.v, Q.v, max_o.v);
 
-void Plane::setCorners(Vec3 min, Vec3 max)
-{
-	this->min = min;
-	this->max = max;
 	Vec3 corner(min.x, max.y, min.z);
 	Vec3 edges[2] = {
 		min - corner,
@@ -94,4 +82,17 @@ void Plane::setCorners(Vec3 min, Vec3 max)
 	{
 		if(diag.v[i] == 0) diag.v[i] += 1e-6;
 	}
+}
+
+void Plane::transform(mat4x4 m)
+{
+
+}
+
+void Plane::setCorners(Vec3 min, Vec3 max)
+{
+	this->min_o = min;
+	this->max_o = max;
+
+	setOrientation(q);
 }

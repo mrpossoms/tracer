@@ -6,6 +6,8 @@ Sphere::Sphere(Vec3 position, float radius)
 {
 	this->position = position;
 	this->radius   = radius;
+
+	this->tag = GEO_TAG_SPHERE;
 }
 
 IntRes Sphere::intersectsAt(Ray3& ray, Intersection* i)
@@ -41,8 +43,9 @@ IntRes Sphere::intersectsAt(Ray3& ray, Intersection* i)
 
 	i->point = ray.pos + ray.dir * t;
 	i->normal = i->point - position;
+	i->normal /= radius;
+	i->t = t;
 	i->surf = this;
-	vec3_norm(i->normal.v, i->normal.v);
 
 	i->sample = material->sample(i);
 

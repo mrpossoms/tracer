@@ -1,5 +1,6 @@
 #include "tracer.h"
 #include <string.h>
+#include <assert.h>
 
 using namespace Tracer;
 
@@ -17,6 +18,7 @@ static Vec3 trace_path(Ray3& ray, TraceOpts& opts, int depth)
 	// Test to see if we are finished, or if we've hit something
 	if(depth >= opts.max_depth) return black;
 	if(!opts.scene->intersected(ray, i)) return black;
+
 	MaterialSample mat = i->sample;
 
 	// Reflect / refract the ray

@@ -1,26 +1,29 @@
 #include "scene.h"
+#include "geometries.h"
+#include <unistd.h>
 
 using namespace Tracer;
 
 bool Scene::intersected(Ray3& ray, Intersection* intr)
 {
-	bool intersected = false;
+	bool ever_intersected = false;
 
 	for(int j = 0; surfaces[j]; ++j)
 	{
-		Intersection temp = {};
-		bool last = intersected;
+		Intersection surf_int = {};
+		bool last = ever_intersected;
+		bool intersected = surfaces[j]->intersectsAt(ray, &surf_int);
 
-		intersected = surfaces[j]->intersectsAt(ray, &temp) | intersected;
+		ever_intersected |= intersected;
 
 		if(!intersected) continue;
-		if(last != intersected) *intr = temp;
+		if(last != ever_intersected) *intr = surf_int;
 
-		if(temp.t < intr->t)
+		if(surf_int.t < intr->t)
 		{
-			*intr = temp;
+			*intr = surf_int;
 		}
 	}
 
-	return intersected;
+	return ever_intersected;
 }

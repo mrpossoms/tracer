@@ -14,8 +14,17 @@ MaterialSample Light::sample(Intersection* i)
 MaterialSample Plastic::sample(Intersection* i)
 {
 	MaterialSample s;
-	s.emittance = Vec3(0.05, 0.05, 0.05);
+	s.emittance = Vec3(0.1, 0.1, 0.1);
 	s.reflectance = Vec3(0.5, 0.5, 0.5);
+
+	return s;
+}
+
+MaterialSample BlackBody::sample(Intersection* i)
+{
+	MaterialSample s;
+	s.emittance = Vec3(0.0, 0.0, 0.0);
+	s.reflectance = Vec3(0.0, 0.0, 0.0);
 
 	return s;
 }

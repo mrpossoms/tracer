@@ -8,7 +8,7 @@ EXT=./external
 # use the findingds of the findlibs.sh script
 include findings.mk
 
-SRC=tracer.cpp sphere.cpp viewer.cpp list_scene.cpp materials.cpp rand.cpp
+SRC=tracer.cpp sphere.cpp viewer.cpp list_scene.cpp materials.cpp rand.cpp plane.cpp
 OUT=./obj
 OBJ = $(addprefix $(OUT)/,$(notdir $(SRC:.cpp=.o)))
 
