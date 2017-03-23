@@ -33,8 +33,12 @@ int main(int argc, char* argv[])
 	initscr(); cbreak(); noecho();
 
 	float t = 0;
-	Quat w, q;
-	w.from_axis_angle(0, 1, 0, 0.005);
+	Quat w, x, y, q;
+
+	x.from_axis_angle(1, 0, 0, 0.01);
+	y.from_axis_angle(0, 1, 0, 0.01);	
+	w.from_axis_angle(0, 0, 1, 0.01);
+
 
 	while(1)
 	{
@@ -47,7 +51,7 @@ int main(int argc, char* argv[])
 		sphere1.position.z = sin(t) * 7;
 		t += 0.01;
 		q = q * w;
-		// quat_norm(q.v, q.v);
+		q = q * x;
 		subject.setOrientation(q);
 
 		trace(&scene, info);
@@ -64,10 +68,8 @@ int main(int argc, char* argv[])
 			}
 		}
 
-
-
 		refresh();
-		usleep(1);
+		// usleep(1);
 	}
 
 	return 0;

@@ -10,7 +10,7 @@ Sphere::Sphere(Vec3 position, float radius)
 	this->tag = GEO_TAG_SPHERE;
 }
 
-IntRes Sphere::intersectsAt(Ray3& ray, Intersection* i)
+IntRes Sphere::intersectsAt(Ray3 ray, Intersection* i)
 {
 	Vec3  l   = position - ray.pos;
 	float s   = vec3_mul_inner(l.v, ray.dir.v);

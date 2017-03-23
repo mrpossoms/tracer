@@ -35,7 +35,7 @@ struct Intersection {
 struct Surface {
 	Material* material;
 	int tag;
-	virtual IntRes intersectsAt(Ray3& ray, Intersection* i) = 0;
+	virtual IntRes intersectsAt(Ray3 ray, Intersection* i) = 0;
 	virtual void   reflectAt(Intersection& i, Ray3& ray, Ray3& outgoing) = 0;
 	virtual void   transform(mat4x4 m) = 0;
 };
