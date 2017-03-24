@@ -1,4 +1,5 @@
 #include "geometries.h"
+#include <assert.h>
 
 using namespace Tracer;
 
@@ -11,21 +12,28 @@ Plane::Plane(Vec3 position, Vec3 min, Vec3 max)
 	tag = GEO_TAG_PLANE;
 }
 
-IntRes Plane::intersectsAt(Ray3 ray, Intersection* i)
+IntRes Plane::intersectsAt(Ray3& ray, Intersection* i)
 {
-	Vec3 r_d = ray.dir;
+	// If this was the last surface intersected, don't
+	// allow self reflection. It's not possible with a plane
+	if(i->surf == this) return INT_FALSE;
 
+	Vec3 r_d;
 	quat_mul_vec3(r_d.v, inv_q.v, ray.dir.v);
-	float n_dot_rd = -vec3_mul_inner(normal.v, r_d.v);
 
-	if(n_dot_rd <= 0)
-	{
-		return INT_FALSE;
-	}
+	float ns_dot_rd[] = {
+		-normal[0].dot(r_d),
+		-normal[1].dot(r_d),
+	};
+
+	int n_i = ns_dot_rd[0] > 0 ? 0 : 1;
+	float n_dot_rd = ns_dot_rd[n_i];
+
+	if(n_dot_rd == 0) return INT_FALSE;
 
 	Vec3 r_o = ray.pos - position;
 	quat_mul_vec3(r_o.v, inv_q.v, r_o.v);
-	i->t     = -vec3_mul_inner(normal.v, r_o.v) / -n_dot_rd;
+	i->t     = vec3_mul_inner(normal[n_i].v, r_o.v) / n_dot_rd;
 	i->point = r_d * i->t;
 
 	// ensure that the point is contained within
@@ -40,12 +48,12 @@ IntRes Plane::intersectsAt(Ray3 ray, Intersection* i)
 		return INT_FALSE;
 	}
 
-	float s = (i->t < 0 ? -1 : 1);
+	// float s = (i->t < 0 ? -1 : 1);
 	i->point += ray.pos;
-	i->normal = normal * s;
-	quat_mul_vec3(i->normal.v, q.v, i->normal.v);
+	// i->normal = normal[n_i];
+	quat_mul_vec3(i->normal.v, q.v, normal[n_i].v);
 
-	i->t *= s;
+	// i->t *= s;
 	i->surf   = this;
 	i->sample = material->sample(i);
 
@@ -82,8 +90,8 @@ void Plane::setOrientation(Quat Q)
 	// 	corner - max,
 	// };
 	//
-	// vec3_mul_cross(this->normal.v, edges[0].v, edges[1].v);
-	// vec3_norm(this->normal.v, this->normal.v);
+	// vec3_mul_cross(this->normal[0].v, edges[0].v, edges[1].v);
+	// vec3_norm(this->normal[0].v, this->normal[0].v);
 	// this->diag = min - max;
 	//
 	// // bias a bit
@@ -109,8 +117,9 @@ void Plane::setCorners(Vec3 min, Vec3 max)
 		corner - max,
 	};
 
-	vec3_mul_cross(this->normal.v, edges[0].v, edges[1].v);
-	vec3_norm(this->normal.v, this->normal.v);
+	vec3_mul_cross(this->normal[0].v, edges[0].v, edges[1].v);
+	vec3_norm(this->normal[0].v, this->normal[0].v);
+	this->normal[1] = this->normal[0] * -1.f;
 	this->diag = min - max;
 
 	// bias a bit

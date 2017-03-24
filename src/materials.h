@@ -5,7 +5,12 @@
 namespace Tracer {
 
 struct Light : Material {
+	Light();
+	Light(Vec3 power);
+
 	MaterialSample sample(Intersection* i);
+
+	Vec3 power;
 };
 
 struct Plastic : Material {

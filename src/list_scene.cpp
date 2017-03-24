@@ -6,11 +6,14 @@ using namespace Tracer;
 
 bool Scene::intersected(Ray3& ray, Intersection* intr)
 {
+	Surface* last_surf = intr->surf;
 	bool ever_intersected = false;
 
 	for(int j = 0; surfaces[j]; ++j)
 	{
-		Intersection surf_int = {};
+		Intersection surf_int = {
+			.surf = last_surf,
+		};
 		bool last = ever_intersected;
 		bool intersected = surfaces[j]->intersectsAt(ray, &surf_int);
 

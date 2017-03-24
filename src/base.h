@@ -1,6 +1,7 @@
 #pragma once
 
 #include "linmath.h"
+#include <assert.h>
 
 #define RNG_TAB_SIZE 1024
 

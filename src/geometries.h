@@ -12,7 +12,7 @@ struct Sphere : Surface {
 	float radius;
 
 	Sphere(Vec3 position, float radius);
-	IntRes intersectsAt(Ray3 ray, Intersection* i);
+	IntRes intersectsAt(Ray3& ray, Intersection* i);
 	void reflectAt(Intersection& i, Ray3& ray, Ray3& outgoing);
 	void transform(mat4x4 m);
 
@@ -39,7 +39,7 @@ struct Plane : Surface {
 
 
 	Plane(Vec3 position, Vec3 min, Vec3 max);
-	IntRes intersectsAt(Ray3 ray, Intersection* i);
+	IntRes intersectsAt(Ray3& ray, Intersection* i);
 	void reflectAt(Intersection& i, Ray3& ray, Ray3& outgoing);
 	void transform(mat4x4 m);
 
@@ -48,7 +48,7 @@ struct Plane : Surface {
 
 private:
 	Vec3 min_o, max_o, corner_o;
-	Vec3 normal, min, max, diag;
+	Vec3 normal[2], min, max, diag;
 	Quat q, inv_q;
 };
 

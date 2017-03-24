@@ -1,6 +1,5 @@
 #include "tracer.h"
 #include <string.h>
-#include <assert.h>
 
 using namespace Tracer;
 
@@ -15,11 +14,20 @@ static Vec3 trace_path(Ray3& ray, TraceOpts& opts, int depth)
 	static const Vec3 black(0, 0, 0);
 	Intersection* i = opts.int_list + depth;
 
+	if(depth >= 1)
+	{
+		i->surf = opts.int_list[depth - 1].surf;
+		// assert(opts.int_list[depth - 1].surf != opts.int_list[depth].surf);
+	}
+
 	// Test to see if we are finished, or if we've hit something
 	if(depth >= opts.max_depth) return black;
 	if(!opts.scene->intersected(ray, i)) return black;
 
+
 	MaterialSample mat = i->sample;
+
+	if(i->surf->material->no_reflection) return mat.emittance;
 
 	// Reflect / refract the ray
 	Ray3 newRay;
@@ -58,10 +66,8 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 		rng_tabs_generated = true;
 	}
 
-	Intersection int_list[MAX_DEPTH];
 	TraceOpts opts = {
 		.scene     = scene,
-		.int_list  = int_list,
 		.max_depth = MAX_DEPTH
 	};
 
@@ -87,6 +93,8 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 			const float samples = 10;
 			for(int i = samples; i--;)
 			{
+				Intersection int_list[MAX_DEPTH] = {};
+				opts.int_list = int_list;
 				color += trace_path(ray, opts, 0);
 			}
 

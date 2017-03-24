@@ -1,4 +1,6 @@
 NAME=tracer
+INSTALL_DIR_INC=/usr/include/tracer
+INSTALL_DIR_LIB=/usr/lib
 
 CXXC=g++
 CXX_FLAGS=-g -ggdb -std=c++11 -Wno-deprecated-declarations
@@ -19,6 +21,16 @@ INC +=-I$(EXT)/linmath.h
 
 all: $(OBJ)
 	$(CXXC) $(CXX_FLAGS) $(INC) $(LIB_PATHS) src/main.cpp -o $(NAME) $(LINK) $(OBJ)
+
+lib: $(OBJ)
+	ar rcs lib$(NAME).a $(OBJ)
+
+install: $(INSTALL_DIR_INC)
+	cp src/*.h $(INSTALL_DIR_INC)
+	cp lib$(NAME).a $(INSTALL_DIR_LIB)
+
+$(INSTALL_DIR_INC):
+	mkdir $(INSTALL_DIR_INC)
 
 $(OUT)/%.o: src/%.cpp | $(OUT)
 	$(CXXC) -o $@ -c $^ $(INC) $(CXX_FLAGS)
