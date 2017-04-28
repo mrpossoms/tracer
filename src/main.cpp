@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
 	Quat w, x, y, q;
 
 	x.from_axis_angle(1, 0, 0, 0.01);
-	y.from_axis_angle(0, 1, 0, 0.00);
-	w.from_axis_angle(0, 0, 1, 0.1);
+	y.from_axis_angle(0, 0, 1, 0.01);
+	w.from_axis_angle(0, 1, 0, 0.01);
 
 	while(1)
 	{
