@@ -3,7 +3,7 @@ INSTALL_DIR_INC=/usr/include/tracer
 INSTALL_DIR_LIB=/usr/lib
 
 CXXC=g++
-CXX_FLAGS=-g -ggdb -std=c++11 -Wno-deprecated-declarations
+CXX_FLAGS=-g -ggdb -std=c++11 -Wno-deprecated-declarations -lpthread
 
 EXT=./external
 

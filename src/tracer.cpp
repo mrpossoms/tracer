@@ -1,5 +1,10 @@
 #include "tracer.h"
 #include <string.h>
+#include <pthread.h>
+
+#define RENDERING_THREADS 4
+
+static pthread_t THREADS[RENDERING_THREADS];
 
 using namespace Tracer;
 
@@ -7,6 +12,12 @@ struct TraceOpts {
 	Scene* scene;
 	Intersection* int_list;
 	int max_depth;
+};
+
+struct ThreadParams {
+	Scene* scene;
+	BufferInfo info;
+	unsigned int start_x, end_x;
 };
 
 static Vec3 trace_path(Ray3& ray, TraceOpts& opts, int depth)
@@ -45,16 +56,32 @@ static Vec3 trace_path(Ray3& ray, TraceOpts& opts, int depth)
 Ray3 ray_at_coord(float u, float v, Viewer& view)
 {
 	Ray3 ray;
-	ray.pos = Vec3(u, v, view.near);
-	ray.dir = Vec3(-u, -v, view.near);
 
+	const Vec3 scl(-1, -1, 1);
+	// u = u / tanf(u * M_PI / 4);
+	// v = v / tanf(v * M_PI / 4);
+
+	Vec3 near(u, v, view.near);
+	// Vec3 far(u * 2, v * 2, view.far);
+
+	ray.pos = Vec3(u, v, view.near);
+	ray.dir = ray.pos;
+	ray.dir *= scl;
+
+	vec3_norm(ray.pos.v, ray.pos.v);
 	vec3_norm(ray.dir.v, ray.dir.v);
 
 	return ray;
 }
 
-int Tracer::trace(Scene* scene, BufferInfo info)
+//char* SPECTRUM = " .,':;|[{+*X88";
+char* SPECTRUM = "8X*+{[|;:',.  ";
+
+
+static void* sub_trace(void* ctx)
 {
+	ThreadParams params = *(ThreadParams*)ctx;
+	BufferInfo info = params.info;
 	static bool rng_tabs_generated;
 	size_t pix_size = info.pixel_format * sizeof(uint8_t);
 	size_t row_size = pix_size * info.width;
@@ -64,30 +91,31 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 	{
 		init_rng();
 		rng_tabs_generated = true;
+
+
 	}
 
 	TraceOpts opts = {
-		.scene     = scene,
+		.scene     = params.scene,
 		.max_depth = MAX_DEPTH
 	};
-
-	char* spectrum = " .,':;|[{+*X88";
-	int spec_size = strlen(spectrum) - 1;
 
 	// a character is roughly twice as tall as as it is
 	// wide, so when scaling the x axis for the UVs the scaling
 	// coefficent (aspect) must take that into account.
 	float aspect = info.width / (float)(info.height * 2);
+	int sub_section_width = params.end_x - params.start_x;
 
 	for(int y = info.height; y--;)
 	{
 		uint8_t* row = info.buffer + row_size * y;
-		for(int x = info.width; x--;)
+		int spec_size = strlen(SPECTRUM) - 1;
+		for(int x = params.start_x; x <= params.end_x; ++x)
 		{
 			uint8_t* pix = row + x * pix_size;
 			float u = (((x << 1) + 1) / (float)info.width)  - 1.f;
 			float v = (((y << 1) + 1) / (float)info.height) - 1.f;
-			Ray3 ray = ray_at_coord(u * aspect, v, scene->view);
+			Ray3 ray = ray_at_coord(u * aspect, v, params.scene->view);
 			Vec3 color(0, 0, 0);
 
 			const float samples = 10;
@@ -104,11 +132,34 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 			color.y = color.y > 1 ? 1 : color.y;
 			color.z = color.z > 1 ? 1 : color.z;
 
-			pix[0] = spectrum[(int)(color.x * spec_size)];
-			pix[1] = spectrum[(int)(color.y * spec_size)];
-			pix[2] = spectrum[(int)(color.z * spec_size)];
+			pix[0] = SPECTRUM[(int)(color.x * spec_size)];
+			pix[1] = SPECTRUM[(int)(color.y * spec_size)];
+			pix[2] = SPECTRUM[(int)(color.z * spec_size)];
 		}
 	}
+
+	return NULL;
+}
+
+
+int Tracer::trace(Scene* scene, BufferInfo info)
+{
+	ThreadParams params[RENDERING_THREADS];
+	pthread_t threads[RENDERING_THREADS];
+
+	unsigned int per_thread = info.width / RENDERING_THREADS;
+
+	for(int i = RENDERING_THREADS; i--;)
+	{
+		params[i].scene = scene;
+		params[i].info  = info;
+		params[i].start_x = per_thread * i;
+		params[i].end_x   = (per_thread * i) + per_thread;
+
+		pthread_create(threads + i, NULL, sub_trace, params + i);
+	}
+
+	for(int i = RENDERING_THREADS; i--;) pthread_join(threads[i], NULL);
 
 	return 0;
 }

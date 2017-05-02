@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
 
 	Surface* surfaces[] = { &subject, &sphere1, &sphere0, NULL,};
 	Scene scene = {
-		.view = Viewer(1, 100, M_PI / 2, 1),
+		.view = Viewer(1.75, 2, M_PI / 2, 1),
 		.surfaces = surfaces,
 	};
 
