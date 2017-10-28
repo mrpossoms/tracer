@@ -5,11 +5,36 @@
 
 using namespace Tracer;
 
+bool USE_CURSES = true;
+
+int proc_opts(int argc, char* argv[])
+{
+	while(1)
+	{
+
+		int c = getopt(argc, argv, "n");
+		if(c == -1) break;
+
+		switch(c)
+		{
+			case 'n':
+				USE_CURSES = false;
+				break;
+		}
+	}
+
+	return 0;
+}
+
 int main(int argc, char* argv[])
 {
 	BufferInfo info = {
 		.pixel_format = tr_fmt_rgb,
 	};
+
+	proc_opts(argc, argv);
+
+	info.debug = !USE_CURSES;	
 
 	Light light0;
 	Light light1(Vec3(0.25, 0.25, 0.25));
@@ -31,7 +56,12 @@ int main(int argc, char* argv[])
 		.surfaces = surfaces,
 	};
 
-	initscr(); cbreak(); noecho();
+	initscr(); 
+
+	if(USE_CURSES)
+	{
+		cbreak(); noecho();
+	}
 
 	float t = 0;
 	Quat w, x, y, q;
@@ -57,19 +87,22 @@ int main(int argc, char* argv[])
 
 		trace(&scene, info);
 
-		for(int i = 0; i < info.height; ++i)
+		if(USE_CURSES)
 		{
-			uint8_t* row = buf + (info.width * i * 3);
-			move(i, 0);
-
-			for(int j = info.width; j--;)
+			for(int i = 0; i < info.height; ++i)
 			{
-				// write(1, row + (j * 3), 1);
-				addch(row[j * 3]);
-			}
-		}
+				uint8_t* row = buf + (info.width * i * 3);
+				move(i, 0);
 
-		refresh();
+				for(int j = info.width; j--;)
+				{
+					// write(1, row + (j * 3), 1);
+					addch(row[j * 3]);
+				}
+			}
+
+			refresh();
+		}
 		// usleep(1);
 	}
 

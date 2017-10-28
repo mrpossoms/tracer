@@ -15,7 +15,8 @@ enum PixelFmt {
 };
 
 struct BufferInfo {
-	PixelFmt    pixel_format;
+	PixelFmt     pixel_format;
+	int          debug;
 	unsigned int width, height;
 	uint8_t* buffer;
 };

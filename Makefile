@@ -14,7 +14,7 @@ SRC=tracer.cpp sphere.cpp viewer.cpp list_scene.cpp materials.cpp rand.cpp plane
 OUT=./obj
 OBJ = $(addprefix $(OUT)/,$(notdir $(SRC:.cpp=.o)))
 
-LINK+=-lncurses
+LINK+=-lncurses -lpthread
 
 # inter-project includes
 INC +=-I$(EXT)/linmath.h

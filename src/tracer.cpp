@@ -1,4 +1,5 @@
 #include "tracer.h"
+#include <stdio.h>
 #include <string.h>
 #include <pthread.h>
 
@@ -75,7 +76,7 @@ Ray3 ray_at_coord(float u, float v, Viewer& view)
 }
 
 //char* SPECTRUM = " .,':;|[{+*X88";
-char* SPECTRUM = "8X*+{[|;:',.  ";
+char* SPECTRUM = (char*)"8X*+{[|;:',.  ";
 
 
 static void* sub_trace(void* ctx)
@@ -91,14 +92,11 @@ static void* sub_trace(void* ctx)
 	{
 		init_rng();
 		rng_tabs_generated = true;
-
-
 	}
 
-	TraceOpts opts = {
-		.scene     = params.scene,
-		.max_depth = MAX_DEPTH
-	};
+	TraceOpts opts = {};
+	opts.scene     = params.scene;
+	opts.max_depth = MAX_DEPTH;
 
 	// a character is roughly twice as tall as as it is
 	// wide, so when scaling the x axis for the UVs the scaling
@@ -110,7 +108,7 @@ static void* sub_trace(void* ctx)
 	{
 		uint8_t* row = info.buffer + row_size * y;
 		int spec_size = strlen(SPECTRUM) - 1;
-		for(int x = params.start_x; x <= params.end_x; ++x)
+		for(int x = params.start_x; x < params.end_x; ++x)
 		{
 			uint8_t* pix = row + x * pix_size;
 			float u = (((x << 1) + 1) / (float)info.width)  - 1.f;
@@ -155,6 +153,20 @@ int Tracer::trace(Scene* scene, BufferInfo info)
 		params[i].info  = info;
 		params[i].start_x = per_thread * i;
 		params[i].end_x   = (per_thread * i) + per_thread;
+
+		if(i == RENDERING_THREADS - 1)
+		{
+			params[i].end_x = info.width;
+		}
+
+		if(info.debug)
+		{
+			printf("Thread%d [%d : %d]\n",
+			       i,
+			       params[i].start_x,
+			       params[i].end_x
+			);  
+		}
 
 		pthread_create(threads + i, NULL, sub_trace, params + i);
 	}

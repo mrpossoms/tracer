@@ -2,7 +2,7 @@
 
 cat /dev/null > findings.mk
 
-function find_lib_dir {
+find_lib_dir() {
 	LIB=$1
 	LIB_PATH=$(find /opt /usr/local -name $LIB -print -quit)
 
