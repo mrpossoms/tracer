@@ -54,26 +54,6 @@ static Vec3 trace_path(Ray3& ray, TraceOpts& opts, int depth)
 	return mat.emittance + (BRDF * reflection);
 }
 
-Ray3 ray_at_coord(float u, float v, Viewer& view)
-{
-	Ray3 ray;
-
-	const Vec3 scl(-1, -1, 1);
-	// u = u / tanf(u * M_PI / 4);
-	// v = v / tanf(v * M_PI / 4);
-
-	Vec3 near(u, v, view.near);
-	// Vec3 far(u * 2, v * 2, view.far);
-
-	ray.pos = Vec3(u, v, view.near);
-	ray.dir = ray.pos;
-	ray.dir *= scl;
-
-	vec3_norm(ray.pos.v, ray.pos.v);
-	vec3_norm(ray.dir.v, ray.dir.v);
-
-	return ray;
-}
 
 //char* SPECTRUM = " .,':;|[{+*X88";
 char* SPECTRUM = (char*)"8X*+{[|;:',.  ";
@@ -113,7 +93,7 @@ static void* sub_trace(void* ctx)
 			uint8_t* pix = row + x * pix_size;
 			float u = (((x << 1) + 1) / (float)info.width)  - 1.f;
 			float v = (((y << 1) + 1) / (float)info.height) - 1.f;
-			Ray3 ray = ray_at_coord(u * aspect, v, params.scene->view);
+			Ray3 ray = params.scene->view.ray_at_coord(u * aspect, v);
 			Vec3 color(0, 0, 0);
 
 			const float samples = 10;

@@ -43,7 +43,6 @@ struct Surface {
 
 struct Viewer {
 	float near, far;
-	mat4x4 view;
 
 	Viewer(float near, float far, float fov, float aspect);
 
@@ -51,14 +50,18 @@ struct Viewer {
 	Viewer& position(Vec3 pos);
 	Viewer& look_at(Vec3 targ);
 	Viewer& up(Vec3 up);
+	Viewer& view(mat4x4 v);
 
 	// perspective matrix
 	Viewer& field_of_view(float fov);
 
+	Ray3 ray_at_coord(float u, float v);
+
 	void recalculate();
 
 private:
-	Vec3 _pos, _up, _target;
+	mat4x4 _view;
+	vec4 _pos, _up, _left, _target;
 	float fov, aspect;
 	bool dirtyProj, dirtyView;
 };
