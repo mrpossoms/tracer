@@ -85,6 +85,11 @@ int main(int argc, char* argv[])
 		q = q * y;
 		subject.setOrientation(q);
 
+		mat4x4 view;
+		Vec3 center(cosf(t) * 0.5, sinf(t) * 0.5, 1);
+		mat4x4_look_at(view, VEC3_ZERO.v, center.v, VEC3_UP.v);	
+
+		scene.view.view(view);
 		trace(&scene, info);
 
 		if(USE_CURSES)
