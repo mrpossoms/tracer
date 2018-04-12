@@ -8,7 +8,6 @@ enum IntRes {
 	INT_FALSE = 0,
 	INT_POSSIBLE,
 	INT_TRUE = 1,
-
 };
 
 struct Intersection;
@@ -43,14 +42,15 @@ struct Surface {
 
 struct Viewer {
 	float near, far;
+	float aspect;
 
-	Viewer(float near, float far, float fov, float aspect);
+	Viewer(float near, float far, float fov);
 
 	// view matrix
 	Viewer& position(Vec3 pos);
 	Viewer& look_at(Vec3 targ);
 	Viewer& up(Vec3 up);
-	Viewer& view(mat4x4 v);
+	void apply();
 
 	// perspective matrix
 	Viewer& field_of_view(float fov);
@@ -61,8 +61,8 @@ struct Viewer {
 
 private:
 	mat4x4 _view;
-	vec4 _pos, _up, _left, _target;
-	float fov, aspect;
+	Vec3 _pos, _up, _left, _target;
+	float fov;
 	bool dirtyProj, dirtyView;
 };
 

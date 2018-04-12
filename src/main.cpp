@@ -46,13 +46,13 @@ int main(int argc, char* argv[])
 	Sphere sphere0(Vec3(0, -4, 0), 2);
 	Sphere sphere1(Vec3(0, 0, 80), 70);
 
-	subject.material = &plastic;
+	subject.material = &light1;
 	sphere0.material = &light0;
-	sphere1.material = &light1;
+	sphere1.material = &plastic;
 
 	Surface* surfaces[] = { &subject, &sphere1, &sphere0, NULL,};
 	Scene scene = {
-		.view = Viewer(1.75, 2, M_PI / 2, 1),
+		.view = Viewer(1.75, 2, M_PI / 2),
 		.surfaces = surfaces,
 	};
 
@@ -81,15 +81,17 @@ int main(int argc, char* argv[])
 		sphere0.position.y = 2;
 		sphere0.position.z = sin(t) * r + 4;
 		t += 0.01;
-		q = q * w;
-		q = q * y;
+		//q = q * w;
+		//q = q * y;
 		subject.setOrientation(q);
 
-		mat4x4 view;
-		Vec3 center(cosf(t) * 0.5, sinf(t) * 0.5, 1);
-		mat4x4_look_at(view, VEC3_ZERO.v, center.v, VEC3_UP.v);	
+		Vec3 eye(cos(t) * 0, 0, 0);
+		Vec3 center(0, 0, 1);
 
-		scene.view.view(view);
+		scene.view.aspect = (info.width << 1) / (float)info.height;
+		scene.view.position(eye).up(VEC3_UP).look_at(center).apply();
+
+		//scene.view.view(view);
 		trace(&scene, info);
 
 		if(USE_CURSES)
